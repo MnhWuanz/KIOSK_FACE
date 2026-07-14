@@ -221,11 +221,11 @@ export function AttendanceScreen() {
           <CameraPanel
             key={cameraKey}
             ref={webcamRef}
-            cameraReady={cameraReady}
+            cameraReady={cameraReady && !showWifiLost}
             cameraError={cameraError}
             phase={face.phase}
             instruction={face.instruction}
-            canCheckIn={Boolean(sessions.data?.canCheckIn) && !showWifiLost}
+            canCheckIn={Boolean(sessions.data?.canCheckIn)}
             onCameraReady={() => {
               setCameraReady(true);
               setCameraError(null);
