@@ -35,23 +35,7 @@ export function AttendanceScreen() {
   const kioskInfo = getKioskInfo();
   const sessions = useTodaySessions();
 
-  const [isOffline, setIsOffline] = useState(
-    typeof window !== 'undefined' ? !window.navigator.onLine : false,
-  );
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
-  const showWifiLost = isOffline || online === false;
+  const showWifiLost = !online;
 
   const face = useFaceLiveness(
     webcamRef,
@@ -277,7 +261,7 @@ export function AttendanceScreen() {
       </footer>
 
       <Modal
-        open={showWifiLost}
+        open={!online}
         className="wifi-lost-modal"
         footer={null}
         closable={false}
@@ -310,7 +294,8 @@ export function AttendanceScreen() {
             Mất kết nối Wifi / Internet
           </h3>
           <p className="m-0 mt-3 text-sm leading-relaxed text-slate-500">
-            Kiosk đã bị mất kết nối mạng. Vui lòng kiểm tra lại thiết bị phát Wifi hoặc đường truyền mạng trên thiết bị.
+            Kiosk đã bị mất kết nối mạng. Vui lòng kiểm tra lại thiết bị phát
+            Wifi hoặc đường truyền mạng trên thiết bị.
           </p>
           <div className="mt-6 flex w-full items-center justify-center gap-2.5 rounded-2xl bg-slate-50 border border-slate-100/80 px-4 py-3.5 text-xs font-bold text-slate-600 shadow-inner">
             <span className="relative flex h-2.5 w-2.5">
