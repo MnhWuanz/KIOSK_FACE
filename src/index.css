@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --blue: #2563eb;
+  --blue-dark: #1d4ed8;
+  --surface: #ffffff;
+  --canvas: #f4f7fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.kiosk-shell {
+  min-height: 100svh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 10% 4%, rgb(219 234 254 / 72%), transparent 29rem),
+    radial-gradient(circle at 92% 100%, rgb(224 231 255 / 65%), transparent 28rem),
+    #f5f7fb;
+}
+
+.activation-otp input {
+  height: clamp(54px, 6vw, 68px) !important;
+  border: 1px solid #dbe3ef !important;
+  border-radius: 14px !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  font-size: clamp(22px, 3vw, 30px) !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+}
+
+.activation-otp input:focus {
+  border-color: #2563eb !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 12%) !important;
+}
+
+.camera-video,
+.camera-video video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.camera-mirror {
+  transform: scaleX(-1);
+}
+
+.face-guide {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  width: min(48%, 320px);
+  aspect-ratio: 0.76;
+  transform: translate(-50%, -50%);
+  border: 3px solid rgb(255 255 255 / 88%);
+  border-radius: 48% 48% 44% 44%;
+  box-shadow: 0 0 0 999px rgb(8 15 29 / 22%), 0 0 32px rgb(37 99 235 / 25%);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.face-guide[data-ready="true"] {
+  border-color: #4ade80;
+  box-shadow: 0 0 0 999px rgb(8 15 29 / 18%), 0 0 40px rgb(74 222 128 / 38%);
+}
+
+.soft-grid {
+  background-image:
+    linear-gradient(rgb(148 163 184 / 7%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(148 163 184 / 7%) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+@keyframes scan {
+  0%, 100% { transform: translateY(-58px); opacity: 0; }
+  15%, 85% { opacity: 0.7; }
+  50% { transform: translateY(58px); opacity: 1; }
+}
+
+.scan-line {
+  animation: scan 2.4s ease-in-out infinite;
+}
+
+@media (max-width: 820px) and (orientation: portrait) {
+  .attendance-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-line {
+    animation: none;
+  }
+}
