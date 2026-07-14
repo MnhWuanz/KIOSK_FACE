@@ -139,3 +139,10 @@ input {
     animation: none;
   }
 }
+
+.wifi-lost-modal .ant-modal-content {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  padding: 0 !important;
+}

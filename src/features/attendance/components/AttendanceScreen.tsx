@@ -1,6 +1,6 @@
 'use client';
 
-import { App, Button, Tooltip } from 'antd';
+import { App, Button, Tooltip, Modal } from 'antd';
 import { useRouter } from '@/src/shared/hooks/useRouter';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
@@ -34,9 +34,32 @@ export function AttendanceScreen() {
   const clock = useClock();
   const kioskInfo = getKioskInfo();
   const sessions = useTodaySessions();
+
+  const [isOffline, setIsOffline] = useState(
+    typeof window !== 'undefined' ? !window.navigator.onLine : false,
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const showWifiLost = isOffline || online === false;
+
   const face = useFaceLiveness(
     webcamRef,
-    cameraReady && Boolean(sessions.data?.canCheckIn) && !sending && !result,
+    cameraReady &&
+      Boolean(sessions.data?.canCheckIn) &&
+      !sending &&
+      !result &&
+      !showWifiLost,
   );
 
   useEffect(() => {
@@ -218,7 +241,7 @@ export function AttendanceScreen() {
             cameraError={cameraError}
             phase={face.phase}
             instruction={face.instruction}
-            canCheckIn={Boolean(sessions.data?.canCheckIn)}
+            canCheckIn={Boolean(sessions.data?.canCheckIn) && !showWifiLost}
             onCameraReady={() => {
               setCameraReady(true);
               setCameraError(null);
@@ -252,6 +275,52 @@ export function AttendanceScreen() {
         </span>
         <span className="font-semibold text-slate-600">Tự động điểm danh</span>
       </footer>
+
+      <Modal
+        open={showWifiLost}
+        className="wifi-lost-modal"
+        footer={null}
+        closable={false}
+        centered
+        keyboard={false}
+        maskClosable={false}
+        width={420}
+        styles={{
+          mask: {
+            backdropFilter: 'blur(10px)',
+            backgroundColor: 'rgba(15, 23, 42, 0.45)',
+          },
+          body: {
+            padding: 0,
+          },
+        }}
+      >
+        <div className="flex flex-col items-center text-center p-8 bg-white/95 rounded-3xl border border-white/80 shadow-2xl">
+          <div className="relative mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-red-50/80 p-4 ring-8 ring-red-50/40">
+            <img
+              src="/wifi.png"
+              alt="Mất kết nối Wifi"
+              className="h-16 w-16 object-contain animate-pulse"
+            />
+            <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white shadow-md border-2 border-white">
+              <IconGlyph>×</IconGlyph>
+            </span>
+          </div>
+          <h3 className="m-0 text-xl font-extrabold text-slate-900 tracking-tight">
+            Mất kết nối Wifi / Internet
+          </h3>
+          <p className="m-0 mt-3 text-sm leading-relaxed text-slate-500">
+            Kiosk đã bị mất kết nối mạng. Vui lòng kiểm tra lại thiết bị phát Wifi hoặc đường truyền mạng trên thiết bị.
+          </p>
+          <div className="mt-6 flex w-full items-center justify-center gap-2.5 rounded-2xl bg-slate-50 border border-slate-100/80 px-4 py-3.5 text-xs font-bold text-slate-600 shadow-inner">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+            </span>
+            Đang tự động thử kết nối lại...
+          </div>
+        </div>
+      </Modal>
     </main>
   );
 }
