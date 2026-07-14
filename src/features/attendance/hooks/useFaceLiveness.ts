@@ -75,9 +75,9 @@ function scoreFace(landmarks: NormalizedLandmark[]): FaceQualityResult {
   const centerX = (minX + maxX) / 2;
   const centerY = (minY + maxY) / 2;
   const margin = Math.min(minX, 1 - maxX, minY, 1 - maxY);
-  const sizeScore = clamp(1 - Math.abs(width - 0.38) / 0.22);
+  const sizeScore = clamp(1 - Math.abs(width - 0.38) / 0.24);
   const centerScore = clamp(
-    1 - (Math.abs(centerX - 0.5) + Math.abs(centerY - 0.47)) * 2.4,
+    1 - (Math.abs(centerX - 0.5) + Math.abs(centerY - 0.47)) * 1.8,
   );
   const marginScore = clamp(margin / 0.09);
   const inFrameScore = Number(
@@ -85,10 +85,10 @@ function scoreFace(landmarks: NormalizedLandmark[]): FaceQualityResult {
   );
   const issues: string[] = [];
 
-  if (width < 0.26 || height < 0.32) issues.push('FACE_TOO_FAR');
-  if (width > 0.65 || height > 0.78) issues.push('FACE_TOO_CLOSE');
-  if (centerScore < 0.72) issues.push('FACE_NOT_CENTERED');
-  if (margin <= 0.035) issues.push('FACE_OUT_OF_FRAME');
+  if (width < 0.2 || height < 0.24) issues.push('FACE_TOO_FAR');
+  if (width > 0.72 || height > 0.82) issues.push('FACE_TOO_CLOSE');
+  if (centerScore < 0.65) issues.push('FACE_NOT_CENTERED');
+  if (margin <= 0.02) issues.push('FACE_OUT_OF_FRAME');
 
   return {
     faceCount: 1,
@@ -232,7 +232,7 @@ export function useFaceLiveness(
           const bothClosed = left > 0.52 && right > 0.52;
           const bothOpen = left < 0.28 && right < 0.28;
           const positioned =
-            quality.issues.length === 0 && quality.inFrameScore >= 0.72;
+            quality.issues.length === 0 && quality.inFrameScore >= 0.65;
 
           if (!positioned) {
             setState((current) => ({

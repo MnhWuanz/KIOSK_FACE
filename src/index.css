@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --ink: #0f172a;
@@ -36,8 +36,16 @@ input {
   min-height: 100svh;
   overflow: hidden;
   background:
-    radial-gradient(circle at 10% 4%, rgb(219 234 254 / 72%), transparent 29rem),
-    radial-gradient(circle at 92% 100%, rgb(224 231 255 / 65%), transparent 28rem),
+    radial-gradient(
+      circle at 10% 4%,
+      rgb(219 234 254 / 72%),
+      transparent 29rem
+    ),
+    radial-gradient(
+      circle at 92% 100%,
+      rgb(224 231 255 / 65%),
+      transparent 28rem
+    ),
     #f5f7fb;
 }
 
@@ -73,18 +81,24 @@ input {
   position: absolute;
   left: 50%;
   top: 48%;
-  width: min(48%, 320px);
+  width: min(48%, 500px);
   aspect-ratio: 0.76;
   transform: translate(-50%, -50%);
   border: 3px solid rgb(255 255 255 / 88%);
   border-radius: 48% 48% 44% 44%;
-  box-shadow: 0 0 0 999px rgb(8 15 29 / 22%), 0 0 32px rgb(37 99 235 / 25%);
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  box-shadow:
+    0 0 0 999px rgb(8 15 29 / 22%),
+    0 0 32px rgb(37 99 235 / 25%);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
-.face-guide[data-ready="true"] {
+.face-guide[data-ready='true'] {
   border-color: #4ade80;
-  box-shadow: 0 0 0 999px rgb(8 15 29 / 18%), 0 0 40px rgb(74 222 128 / 38%);
+  box-shadow:
+    0 0 0 999px rgb(8 15 29 / 18%),
+    0 0 40px rgb(74 222 128 / 38%);
 }
 
 .soft-grid {
@@ -95,9 +109,19 @@ input {
 }
 
 @keyframes scan {
-  0%, 100% { transform: translateY(-58px); opacity: 0; }
-  15%, 85% { opacity: 0.7; }
-  50% { transform: translateY(58px); opacity: 1; }
+  0%,
+  100% {
+    transform: translateY(-58px);
+    opacity: 0;
+  }
+  15%,
+  85% {
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(58px);
+    opacity: 1;
+  }
 }
 
 .scan-line {
