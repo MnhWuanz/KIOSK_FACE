@@ -35,7 +35,7 @@ export function AttendanceScreen() {
   const kioskInfo = getKioskInfo();
   const sessions = useTodaySessions();
 
-  const showWifiLost = !online;
+  const showWifiLost = online === false;
 
   const face = useFaceLiveness(
     webcamRef,
@@ -225,7 +225,7 @@ export function AttendanceScreen() {
             cameraError={cameraError}
             phase={face.phase}
             instruction={face.instruction}
-            canCheckIn={Boolean(sessions.data?.canCheckIn)}
+            canCheckIn={Boolean(sessions.data?.canCheckIn) && !showWifiLost}
             onCameraReady={() => {
               setCameraReady(true);
               setCameraError(null);
@@ -261,7 +261,7 @@ export function AttendanceScreen() {
       </footer>
 
       <Modal
-        open={!online}
+        open={showWifiLost}
         className="wifi-lost-modal"
         footer={null}
         closable={false}
