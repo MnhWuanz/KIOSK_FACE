@@ -19,7 +19,7 @@ import type {
 const WASM_URL =
   'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm';
 const MODEL_URL = '/models/face_landmarker.task';
-const EYES_OPEN_REQUIRED_MS = 2_000;
+const EYES_OPEN_REQUIRED_MS = 800;
 const DETECTION_INTERVAL_MS = 90;
 
 export type FacePhase =
@@ -282,7 +282,7 @@ export function useFaceLiveness(
             }));
           } else if (!blinkPassedRef.current) {
             if (bothClosed) closedFramesRef.current += 1;
-            if (closedFramesRef.current >= 2 && bothOpen) {
+            if (closedFramesRef.current >= 1 && bothOpen) {
               blinkPassedRef.current = true;
               openedAtRef.current = now;
             }
