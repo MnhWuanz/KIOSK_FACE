@@ -66,42 +66,24 @@ const OVAL_CX = 0.5;
 const OVAL_CY = 0.48;
 const OVAL_RX = 0.24;      // bán trục ngang (normalized theo chiều rộng video)
 const OVAL_RY = 0.316;     // bán trục dọc  (normalized theo chiều cao video)
-// Co nhỏ vùng kiểm tra thêm 1 padding để bounding box nằm hoàn toàn bên trong
-const OVAL_PADDING = 0.03;
 
 function clamp(value: number, min = 0, max = 1) {
   return Math.min(max, Math.max(min, value));
 }
 
 /**
- * Kiểm tra xem bounding box khuôn mặt có nằm HOÀN TOÀN bên trong ellipse oval không.
- * Dùng điều kiện: mỗi góc của bbox phải thoả phương trình ellipse.
+ * Kiểm tra xem TÂM khuôn mặt có nằm bên trong ellipse oval không.
+ * Chỉ dùng điểm giữa của bounding box (tránh fail do tóc/đỉnh đầu vượt rìa oval).
  */
 function isFaceInsideOval(landmarks: NormalizedLandmark[]): boolean {
   const xs = landmarks.map((p) => p.x);
   const ys = landmarks.map((p) => p.y);
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minY = Math.min(...ys);
-  const maxY = Math.max(...ys);
+  const centerX = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const centerY = (Math.min(...ys) + Math.max(...ys)) / 2;
 
-  // 4 góc của bounding box + tâm
-  const checkPoints = [
-    { x: minX, y: minY },
-    { x: maxX, y: minY },
-    { x: minX, y: maxY },
-    { x: maxX, y: maxY },
-    { x: (minX + maxX) / 2, y: (minY + maxY) / 2 },
-  ];
-
-  const rx = OVAL_RX - OVAL_PADDING;
-  const ry = OVAL_RY - OVAL_PADDING;
-
-  return checkPoints.every((pt) => {
-    const dx = (pt.x - OVAL_CX) / rx;
-    const dy = (pt.y - OVAL_CY) / ry;
-    return dx * dx + dy * dy <= 1.0;
-  });
+  const dx = (centerX - OVAL_CX) / OVAL_RX;
+  const dy = (centerY - OVAL_CY) / OVAL_RY;
+  return dx * dx + dy * dy <= 1.0;
 }
 
 function scoreFace(landmarks: NormalizedLandmark[]): FaceQualityResult {
