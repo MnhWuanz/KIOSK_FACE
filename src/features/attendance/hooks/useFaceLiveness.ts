@@ -59,8 +59,49 @@ const initialState: FaceState = {
   },
 };
 
+// Thông số ellipse của face-guide CSS:
+// left: 50%, top: 48%, width: min(48%, 500px) → rx ≈ 0.24 (normalized)
+// aspect-ratio: 0.76 → height = width / 0.76 → ry ≈ 0.24 / 0.76 ≈ 0.316
+const OVAL_CX = 0.5;
+const OVAL_CY = 0.48;
+const OVAL_RX = 0.24;      // bán trục ngang (normalized theo chiều rộng video)
+const OVAL_RY = 0.316;     // bán trục dọc  (normalized theo chiều cao video)
+// Co nhỏ vùng kiểm tra thêm 1 padding để bounding box nằm hoàn toàn bên trong
+const OVAL_PADDING = 0.03;
+
 function clamp(value: number, min = 0, max = 1) {
   return Math.min(max, Math.max(min, value));
+}
+
+/**
+ * Kiểm tra xem bounding box khuôn mặt có nằm HOÀN TOÀN bên trong ellipse oval không.
+ * Dùng điều kiện: mỗi góc của bbox phải thoả phương trình ellipse.
+ */
+function isFaceInsideOval(landmarks: NormalizedLandmark[]): boolean {
+  const xs = landmarks.map((p) => p.x);
+  const ys = landmarks.map((p) => p.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+
+  // 4 góc của bounding box + tâm
+  const checkPoints = [
+    { x: minX, y: minY },
+    { x: maxX, y: minY },
+    { x: minX, y: maxY },
+    { x: maxX, y: maxY },
+    { x: (minX + maxX) / 2, y: (minY + maxY) / 2 },
+  ];
+
+  const rx = OVAL_RX - OVAL_PADDING;
+  const ry = OVAL_RY - OVAL_PADDING;
+
+  return checkPoints.every((pt) => {
+    const dx = (pt.x - OVAL_CX) / rx;
+    const dy = (pt.y - OVAL_CY) / ry;
+    return dx * dx + dy * dy <= 1.0;
+  });
 }
 
 function scoreFace(landmarks: NormalizedLandmark[]): FaceQualityResult {
@@ -192,9 +233,16 @@ export function useFaceLiveness(
         lastProcessedAtRef.current = frameTime;
         const now = frameTime;
         const result = landmarker.detectForVideo(video, now);
-        const faceCount = result.faceLandmarks.length;
 
-        if (faceCount === 0) {
+        // Lọc: chỉ giữ lại những khuôn mặt nằm TRONG oval
+        // → người đứng ngoài rìa/phía sau hoàn toàn bị bỏ qua
+        const facesInOval = result.faceLandmarks
+          .map((lm, idx) => ({ lm, idx }))
+          .filter(({ lm }) => isFaceInsideOval(lm));
+
+        const ovalFaceCount = facesInOval.length;
+
+        if (ovalFaceCount === 0) {
           setState((current) => ({
             ...current,
             phase: 'no-face',
@@ -207,22 +255,26 @@ export function useFaceLiveness(
               issues: ['NO_FACE'],
             },
           }));
-        } else if (faceCount > 1) {
+        } else if (ovalFaceCount > 1) {
+          // Có nhiều hơn 1 khuôn mặt NẰM TRONG oval → mới cảnh báo
           setState((current) => ({
             ...current,
             phase: 'multiple',
             instruction: 'Chỉ một người đứng trước camera',
             progress: 0,
             quality: {
-              faceCount,
+              faceCount: ovalFaceCount,
               inFrameScore: 0,
               visibilityScore: 0,
               issues: ['MULTIPLE_FACES'],
             },
           }));
         } else {
-          const quality = scoreFace(result.faceLandmarks[0]);
-          const blendshapes = result.faceBlendshapes[0]?.categories ?? [];
+          // Đúng 1 khuôn mặt trong oval → xét các chỉ tiêu bình thường
+          const { lm: landmarks, idx: faceIdx } = facesInOval[0];
+          const quality = scoreFace(landmarks);
+          const blendshapes =
+            result.faceBlendshapes[faceIdx]?.categories ?? [];
           const left =
             blendshapes.find((item) => item.categoryName === 'eyeBlinkLeft')
               ?.score ?? 0;
